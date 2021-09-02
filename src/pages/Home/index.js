@@ -1,4 +1,5 @@
-import React, { useState, useReducer } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useReducer, useEffect } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEquals } from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +10,7 @@ import { initialState } from "../../state";
 import reducer from "../../state/reducer";
 import logo from "../../xoximg.png";
 import PresaleABI from "../../assets/ABI.json";
+import { CONTRACT_ADDRESS } from "../../assets/env";
 
 const NavFlex = styled.div`
   display: flex;
@@ -65,6 +67,11 @@ const Image = styled.img`
 const Home = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [bnbAmount, setBNBAmount] = useState(0);
+  const [daysLeft, setDaysLeft] = useState("0");
+  const [hoursLeft, setHoursLeft] = useState("0");
+  const [minutesLeft, setMinutesLeft] = useState("0");
+  const [secondsLeft, setSecondsLeft] = useState("0");
+  const [presaleContract, setPresaleContract] = useState(null);
 
   const setProvider = provider =>
     dispatch({
@@ -72,13 +79,73 @@ const Home = () => {
       payload: new Web3(provider)
     });
 
+  const setAccount = account =>
+    dispatch({
+      type: "ACCOUNT_SET",
+      payload: account
+    });
+
   const handleBNBInputChange = e => setBNBAmount(e.target.value);
+
   const injectProvider = () => {
     if (window.ethereum) {
       setProvider(window.ethereum);
-      window.ethereum.send();
     }
   };
+
+  const setContract = () => {
+    const contract = new state.provider.eth.Contract(
+      PresaleABI,
+      CONTRACT_ADDRESS
+    );
+    console.log(CONTRACT_ADDRESS);
+    setPresaleContract(contract);
+  };
+
+  const requestAccounts = () => {
+    if (window.ethereum) {
+      window.ethereum
+        .request({ method: "eth_requestAccounts" })
+        .then(accounts => setAccount(accounts[0]));
+    }
+  };
+
+  const loadTime = async () => {
+    const remainingDays = await presaleContract.methods
+      .getRemainingDays()
+      .call();
+    const jsDate = new Date(Date.now() + remainingDays * 1000).getTime();
+    setInterval(() => {
+      const now = new Date().getTime();
+      const diff = jsDate - now;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      const daysAsString = days.toFixed(0);
+      const hoursAsString = hours.toFixed(0);
+      const minutesAsString = minutes.toFixed(0);
+      const secondsAsString = seconds.toFixed(0);
+      setDaysLeft(daysAsString);
+      setHoursLeft(hoursAsString);
+      setMinutesLeft(minutesAsString);
+      setSecondsLeft(secondsAsString);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    injectProvider();
+  }, []);
+
+  useEffect(() => {
+    if (!!state.provider) setContract();
+  }, [state.provider]);
+
+  useEffect(() => {
+    if (!!presaleContract) loadTime();
+  }, [presaleContract]);
 
   return (
     <div>
@@ -129,8 +196,13 @@ const Home = () => {
           borderRadius="5px"
           fontStyle="normal"
           fontWeight="bold"
+          onClick={requestAccounts}
         >
-          CONNECT METAMASK
+          {!!state.account
+            ? state.account.substring(0, state.account.length - 36) +
+              "..." +
+              state.account.substring(state.account.length - 4)
+            : "CONNECT METAMASK"}
         </Button>
       </NavFlex>
       <CenterFlex marginTop="40px" padding="14px">
@@ -159,6 +231,7 @@ const Home = () => {
           <Input
             padding="20px"
             border="0.7px solid #000000"
+            borderRadius="5px"
             width="400px"
             placeholder="Enter BNB amount"
             value={bnbAmount}
@@ -196,10 +269,43 @@ const Home = () => {
             color="#1642fa"
             padding="1px 4px 1px 4px"
           >
-            13
+            {daysLeft}
           </SpanText>
           <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
             days
+          </SpanText>
+          <SpanText
+            fontSize="34px"
+            fontWeight="bold"
+            color="#1642fa"
+            padding="1px 4px 1px 4px"
+          >
+            {hoursLeft}
+          </SpanText>
+          <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
+            hours
+          </SpanText>
+          <SpanText
+            fontSize="34px"
+            fontWeight="bold"
+            color="#1642fa"
+            padding="1px 4px 1px 4px"
+          >
+            {minutesLeft}
+          </SpanText>
+          <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
+            minutes
+          </SpanText>
+          <SpanText
+            fontSize="34px"
+            fontWeight="bold"
+            color="#1642fa"
+            padding="1px 4px 1px 4px"
+          >
+            {secondsLeft}
+          </SpanText>
+          <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
+            seconds
           </SpanText>
         </DivInCenterFlex>
       </CenterFlex>
