@@ -10,6 +10,11 @@ const reducer = (state, action) => {
         ...state,
         account: action.payload
       };
+    case "RATE_SET":
+      return {
+        ...state,
+        rate: action.payload
+      };
     default:
       return state;
   }
