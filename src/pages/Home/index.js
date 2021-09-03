@@ -6,6 +6,8 @@ import { faEquals } from "@fortawesome/free-solid-svg-icons";
 import Web3 from "web3";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
+import Spinner from "../../components/Spinner";
+import Toast from "../../components/Toast";
 import { initialState } from "../../state";
 import reducer from "../../state/reducer";
 import logo from "../../xoximg.png";
@@ -64,6 +66,11 @@ const Image = styled.img`
   border-radius: ${props => props.borderRadius || "50%"};
 `;
 
+const explorer =
+  process.env.NODE_ENV === "development"
+    ? "https://testnet.bscscan.com/tx/"
+    : "https://bscscan.com/tx/";
+
 const Home = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [bnbAmount, setBNBAmount] = useState(0);
@@ -72,6 +79,11 @@ const Home = () => {
   const [minutesLeft, setMinutesLeft] = useState("0");
   const [secondsLeft, setSecondsLeft] = useState("0");
   const [presaleContract, setPresaleContract] = useState(null);
+  const [buyLoading, setBuyLoading] = useState(false);
+  const [errorToast, setErrorToast] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [txHash, setTxHash] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
 
   const setProvider = provider =>
     dispatch({
@@ -110,6 +122,14 @@ const Home = () => {
     }
   };
 
+  const watchAccountsChange = () => {
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", accounts =>
+        setAccount(accounts[0])
+      );
+    }
+  };
+
   const loadTime = async () => {
     const remainingDays = await presaleContract.methods
       .getRemainingDays()
@@ -135,8 +155,30 @@ const Home = () => {
     }, 1000);
   };
 
+  const buy = async () => {
+    try {
+      setBuyLoading(true);
+      const tx = await presaleContract.methods
+        .buyXOX()
+        .send({ from: state.account, value: bnbAmount * 10 ** 18 });
+      setBuyLoading(false);
+      setToastMessage("Transaction executed: ");
+      setErrorToast(false);
+      setTxHash(tx.transactionHash);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 5000);
+    } catch (error) {
+      setBuyLoading(false);
+      setToastMessage("Transaction reverted");
+      setErrorToast(true);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 5000);
+    }
+  };
+
   useEffect(() => {
     injectProvider();
+    watchAccountsChange();
   }, []);
 
   useEffect(() => {
@@ -248,8 +290,10 @@ const Home = () => {
             fontWeight="bold"
             padding="20px"
             border="none"
+            onClick={buy}
+            disabled={bnbAmount <= 0}
           >
-            Buy
+            {buyLoading ? <Spinner border="3px solid purple" /> : "Buy"}
           </Button>
         </DivInCenterFlex>
       </CenterFlex>
@@ -309,6 +353,38 @@ const Home = () => {
           </SpanText>
         </DivInCenterFlex>
       </CenterFlex>
+      <Toast isErrorToast={errorToast} isShown={showToast}>
+        {errorToast ? (
+          <SpanText
+            fontSize="14px"
+            fontWeight="normal"
+            color="white"
+            padding="1px 4px 1px 4px"
+          >
+            {toastMessage}
+          </SpanText>
+        ) : (
+          <div>
+            <SpanText
+              fontSize="14px"
+              fontWeight="bold"
+              color="white"
+              padding="1px 4px 1px 4px"
+            >
+              {toastMessage}
+            </SpanText>{" "}
+            <AnchorLink
+              href={`${explorer}${txHash}`}
+              fontSize="14px"
+              fontWeight="bold"
+              color="#ffffff"
+              padding="2px 6px 2px 6px"
+            >
+              View on explorer
+            </AnchorLink>
+          </div>
+        )}
+      </Toast>
     </div>
   );
 };
