@@ -42,6 +42,11 @@ const SpanText = styled.span`
   font-style: ${props => props.fontStyle || "normal"};
   color: ${props => props.color || "black"};
   padding: ${props => props.padding || 0};
+
+  @media screen and (max-width: 360px) {
+    font-size: ${props => props.mobileFontSize || props.fontSize || "13px"};
+    padding: ${props => props.mobilePadding || props.padding || 0};
+  }
 `;
 
 const AnchorLink = styled.a`
@@ -50,6 +55,10 @@ const AnchorLink = styled.a`
   font-style: ${props => props.fontStyle || "normal"};
   color: ${props => props.color || "black"};
   padding: ${props => props.padding || 0};
+
+  @media screen and (max-width: 360px) {
+    font-size: 13px;
+  }
 `;
 
 const DivInCenterFlex = styled.div`
@@ -64,10 +73,15 @@ const Image = styled.img`
   width: ${props => props.width || "90px"};
   height: ${props => props.height || "90px"};
   border-radius: ${props => props.borderRadius || "50%"};
+
+  @media screen and (max-width: 360px) {
+    width: ${props => props.mobileWidth || props.width || "90px"};
+    height: ${props => props.mobileHeight || props.height || "90px"};
+  }
 `;
 
 const explorer =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV !== "production"
     ? "https://testnet.bscscan.com/tx/"
     : "https://bscscan.com/tx/";
 
@@ -135,7 +149,7 @@ const Home = () => {
       .getRemainingDays()
       .call();
     const jsDate = new Date(Date.now() + remainingDays * 1000).getTime();
-    setInterval(() => {
+    const x = setInterval(() => {
       const now = new Date().getTime();
       const diff = jsDate - now;
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -152,6 +166,14 @@ const Home = () => {
       setHoursLeft(hoursAsString);
       setMinutesLeft(minutesAsString);
       setSecondsLeft(secondsAsString);
+
+      if (diff < 0) {
+        clearInterval(x);
+        setDaysLeft("0");
+        setHoursLeft("0");
+        setMinutesLeft("0");
+        setSecondsLeft("0");
+      }
     }, 1000);
   };
 
@@ -169,7 +191,7 @@ const Home = () => {
       setTimeout(() => setShowToast(false), 5000);
     } catch (error) {
       setBuyLoading(false);
-      setToastMessage("Transaction reverted");
+      setToastMessage("An error occured");
       setErrorToast(true);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 5000);
@@ -196,9 +218,11 @@ const Home = () => {
           <Image
             borderRadius="50%"
             src={logo}
-            width="60px"
-            height="60px"
+            width="70px"
+            height="70px"
             alt="XOXCASH Logo"
+            mobileHeight="30px"
+            mobileWidth="30px"
           />
         </div>
         <Spacer />
@@ -209,6 +233,7 @@ const Home = () => {
             fontWeight="bold"
             color="#ffffff"
             padding="2px 6px 2px 6px"
+            target="_blank"
           >
             Discord
           </AnchorLink>
@@ -218,6 +243,7 @@ const Home = () => {
             fontWeight="bold"
             color="#ffffff"
             padding="2px 6px 2px 6px"
+            target="_blank"
           >
             Telegram
           </AnchorLink>
@@ -227,6 +253,7 @@ const Home = () => {
             fontWeight="bold"
             color="#ffffff"
             padding="2px 6px 2px 6px"
+            target="_blank"
           >
             Twitter
           </AnchorLink>
@@ -239,21 +266,36 @@ const Home = () => {
           fontStyle="normal"
           fontWeight="bold"
           onClick={requestAccounts}
+          padding="8px"
+          mobilePadding="2px"
         >
           {!!state.account
             ? state.account.substring(0, state.account.length - 36) +
               "..." +
               state.account.substring(state.account.length - 4)
-            : "CONNECT METAMASK"}
+            : "Connect Metamask"}
         </Button>
       </NavFlex>
       <CenterFlex marginTop="40px" padding="14px">
+        <DivInCenterFlex margin="2px">
+          <SpanText
+            fontSize="40px"
+            fontWeight="normal"
+            color="#ffffff"
+            padding="2px 6px 2px 6px"
+          >
+            Buy XoXCash
+          </SpanText>
+        </DivInCenterFlex>
+      </CenterFlex>
+      <CenterFlex marginTop="10px" padding="8px">
         <DivInCenterFlex margin="3px 4px 3px 4px">
           <Input
             disabled
-            padding="14px"
+            padding="20px"
             border="0.7px solid #000000"
             value="1 XOXCASH"
+            mobilePadding="4px"
           />
         </DivInCenterFlex>
         <DivInCenterFlex margin="3px 4px 3px 4px">
@@ -262,9 +304,10 @@ const Home = () => {
         <DivInCenterFlex margin="3px 4px 3px 4px">
           <Input
             disabled
-            padding="14px"
+            padding="20px"
             border="0.7px solid #000000"
             value="0.0025 BNB"
+            mobilePadding="4px"
           />
         </DivInCenterFlex>
       </CenterFlex>
@@ -279,6 +322,8 @@ const Home = () => {
             value={bnbAmount}
             type="number"
             onChange={handleBNBInputChange}
+            mobileWidth="200px"
+            mobilePadding="10px"
           />
         </DivInCenterFlex>
         <DivInCenterFlex margin="2px">
@@ -290,10 +335,12 @@ const Home = () => {
             fontWeight="bold"
             padding="20px"
             border="none"
+            mobilePadding="10px"
+            mobileFontSize="12px"
             onClick={buy}
-            disabled={bnbAmount <= 0}
+            disabled={bnbAmount <= 0 || !bnbAmount}
           >
-            {buyLoading ? <Spinner border="3px solid purple" /> : "Buy"}
+            {buyLoading ? <Spinner border="3px solid #f3f3f3" /> : "Buy"}
           </Button>
         </DivInCenterFlex>
       </CenterFlex>
@@ -312,10 +359,17 @@ const Home = () => {
             fontWeight="bold"
             color="#1642fa"
             padding="1px 4px 1px 4px"
+            mobileFontSize="20px"
+            mobilePadding="0px 2px 0px 2px"
           >
             {daysLeft}
           </SpanText>
-          <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
+          <SpanText
+            fontSize="15px"
+            mobileFontSize="10px"
+            fontWeight="normal"
+            color="#ffffff"
+          >
             days
           </SpanText>
           <SpanText
@@ -323,10 +377,17 @@ const Home = () => {
             fontWeight="bold"
             color="#1642fa"
             padding="1px 4px 1px 4px"
+            mobileFontSize="20px"
+            mobilePadding="0px 2px 0px 2px"
           >
             {hoursLeft}
           </SpanText>
-          <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
+          <SpanText
+            fontSize="15px"
+            mobileFontSize="10px"
+            fontWeight="normal"
+            color="#ffffff"
+          >
             hours
           </SpanText>
           <SpanText
@@ -334,10 +395,17 @@ const Home = () => {
             fontWeight="bold"
             color="#1642fa"
             padding="1px 4px 1px 4px"
+            mobileFontSize="20px"
+            mobilePadding="0px 2px 0px 2px"
           >
             {minutesLeft}
           </SpanText>
-          <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
+          <SpanText
+            fontSize="15px"
+            mobileFontSize="10px"
+            fontWeight="normal"
+            color="#ffffff"
+          >
             minutes
           </SpanText>
           <SpanText
@@ -345,10 +413,17 @@ const Home = () => {
             fontWeight="bold"
             color="#1642fa"
             padding="1px 4px 1px 4px"
+            mobileFontSize="20px"
+            mobilePadding="0px 2px 0px 2px"
           >
             {secondsLeft}
           </SpanText>
-          <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
+          <SpanText
+            fontSize="15px"
+            mobileFontSize="10px"
+            fontWeight="normal"
+            color="#ffffff"
+          >
             seconds
           </SpanText>
         </DivInCenterFlex>
@@ -385,6 +460,20 @@ const Home = () => {
           </div>
         )}
       </Toast>
+      <CenterFlex marginTop="30px" padding="3px">
+        <Image
+          borderRadius="50%"
+          src={logo}
+          width="20px"
+          height="20px"
+          alt="XOXCASH Logo"
+        />
+      </CenterFlex>
+      <CenterFlex marginTop="4px" padding="4px">
+        <SpanText fontSize="15px" fontWeight="normal" color="#ffffff">
+          Copyright @ 2021 XOXCASH
+        </SpanText>
+      </CenterFlex>
     </div>
   );
 };
