@@ -1,4 +1,5 @@
 export const initialState = {
   provider: null,
-  account: null
+  account: null,
+  rate: null
 };

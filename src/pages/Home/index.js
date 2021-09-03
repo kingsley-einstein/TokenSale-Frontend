@@ -111,6 +111,12 @@ const Home = () => {
       payload: account
     });
 
+  const setRate = rate =>
+    dispatch({
+      type: "RATE_SET",
+      payload: rate / 10 ** 18
+    });
+
   const handleBNBInputChange = e => setBNBAmount(e.target.value);
 
   const injectProvider = () => {
@@ -177,6 +183,11 @@ const Home = () => {
     }, 1000);
   };
 
+  const getRate = async () => {
+    const rate = await presaleContract.methods.getRate().call();
+    setRate(rate);
+  };
+
   const buy = async () => {
     try {
       setBuyLoading(true);
@@ -208,7 +219,10 @@ const Home = () => {
   }, [state.provider]);
 
   useEffect(() => {
-    if (!!presaleContract) loadTime();
+    if (!!presaleContract) {
+      loadTime();
+      getRate();
+    }
   }, [presaleContract]);
 
   return (
@@ -306,7 +320,7 @@ const Home = () => {
             disabled
             padding="20px"
             border="0.7px solid #000000"
-            value="0.0025 BNB"
+            value={`${state.rate || 0} BNB`}
             mobilePadding="4px"
           />
         </DivInCenterFlex>
