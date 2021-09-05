@@ -2,7 +2,7 @@
 import React, { useState, useReducer, useEffect } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEquals } from "@fortawesome/free-solid-svg-icons";
+import { faEquals, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import Web3 from "web3";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
@@ -77,6 +77,17 @@ const Image = styled.img`
   @media screen and (max-width: 360px) {
     width: ${props => props.mobileWidth || props.width || "90px"};
     height: ${props => props.mobileHeight || props.height || "90px"};
+  }
+`;
+
+const Ul = styled.ul`
+  list-style-type: none;
+  margin: ${props => props.margin || "0"};
+  padding: ${props => props.padding || "0"};
+
+  @media screen and (max-width: 360px) {
+    padding: ${props => props.mobilePadding || props.padding || "0"};
+    margin: ${props => props.mobileMargin || props.margin || "0"};
   }
 `;
 
@@ -298,7 +309,7 @@ const Home = () => {
             color="#ffffff"
             padding="2px 6px 2px 6px"
           >
-            Buy XoXCash (Get additional 10% of every purchase)
+            Buy XoXCash (Get additional 10% bonus for every purchase)
           </SpanText>
         </DivInCenterFlex>
       </CenterFlex>
@@ -440,6 +451,52 @@ const Home = () => {
           >
             seconds
           </SpanText>
+        </DivInCenterFlex>
+      </CenterFlex>
+      <CenterFlex marginTop="10px" padding="4px">
+        <SpanText
+          fontSize="18px"
+          mobileFontSize="13px"
+          fontWeight="bold"
+          color="#ffffff"
+        >
+          - Benefits of being a holder -
+        </SpanText>
+      </CenterFlex>
+      <CenterFlex marginTop="2px">
+        <DivInCenterFlex margin="4px">
+          <Ul padding="4px" margin="8px">
+            <li>
+              <FontAwesomeIcon icon={faCheckCircle} color="#dcdcdc" />
+              <SpanText fontSize="18px" mobileFontSize="14px" color="#ffffff">
+                10% additional bonus (for presale participants)
+              </SpanText>
+            </li>
+            <li>
+              <FontAwesomeIcon icon={faCheckCircle} color="#dcdcdc" />
+              <SpanText fontSize="18px" mobileFontSize="14px" color="#ffffff">
+                Get an XOX business card
+              </SpanText>
+            </li>
+            <li>
+              <FontAwesomeIcon icon={faCheckCircle} color="#dcdcdc" />
+              <SpanText fontSize="18px" mobileFontSize="14px" color="#ffffff">
+                Become a member of the XOX business club
+              </SpanText>
+            </li>
+            <li>
+              <FontAwesomeIcon icon={faCheckCircle} color="#dcdcdc" />
+              <SpanText fontSize="18px" mobileFontSize="14px" color="#ffffff">
+                Presale participants get rewarded in airdrops
+              </SpanText>
+            </li>
+            <li>
+              <FontAwesomeIcon icon={faCheckCircle} color="#dcdcdc" />
+              <SpanText fontSize="18px" mobileFontSize="14px" color="#ffffff">
+                Participants become early adopters of XOX NFTs
+              </SpanText>
+            </li>
+          </Ul>
         </DivInCenterFlex>
       </CenterFlex>
       <Toast isErrorToast={errorToast} isShown={showToast}>
