@@ -298,7 +298,7 @@ const Home = () => {
             color="#ffffff"
             padding="2px 6px 2px 6px"
           >
-            Buy XoXCash
+            Buy XoXCash (Get additional 10% of every purchase)
           </SpanText>
         </DivInCenterFlex>
       </CenterFlex>
